@@ -32,3 +32,5 @@ access.log
 error.log
 
 fly.toml
+
+/db/*

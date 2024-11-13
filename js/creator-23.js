@@ -4104,14 +4104,30 @@ async function addTextbox(textboxType) {
 }
 //ART TAB
 function uploadArt(imageSource, otherParams) {
-	art.src = imageSource;
-	if (otherParams && otherParams == 'autoFit') {
-		art.onload = function() {
-			autoFitArt();
-			art.onload = artEdited;
-		};
-	}
+    if (!imageSource) {
+        console.error('No image source provided.');
+        return;
+    }
+
+	console.log('Loading art from source:', imageSource);
+
+    // Check if the image source is already a valid file path
+    if (!imageSource.startsWith('data:') && !imageSource.startsWith('http')) {
+        art.src = fixUri(imageSource); // Use the provided file path as is
+        return;
+    }
+
+    // If it's a Base64 string, process it
+    art.src = imageSource;
+
+    if (otherParams && otherParams === 'autoFit') {
+        art.onload = function () {
+            autoFitArt();
+            art.onload = artEdited;
+        };
+    }
 }
+
 function artEdited() {
 	card.artSource = art.src;
 	card.artX = document.querySelector('#art-x').value / card.width;
@@ -5012,176 +5028,12 @@ function changeCardIndex() {
 		fetchSetSymbol();
 	}
 }
-function loadAvailableCards(cardKeys = JSON.parse(localStorage.getItem('cardKeys'))) {
-	if (!cardKeys) {
-		cardKeys = [];
-		cardKeys.sort();
-		localStorage.setItem('cardKeys', JSON.stringify(cardKeys));
-	}
-	document.querySelector('#load-card-options').innerHTML = '<option selected="selected" disabled>None selected</option>';
-	cardKeys.forEach(item => {
-		var cardKeyOption = document.createElement('option');
-		cardKeyOption.innerHTML = item;
-		document.querySelector('#load-card-options').appendChild(cardKeyOption);
-	});
-}
+
 function importChanged() {
 	var unique = document.querySelector('#importAllPrints').checked ? 'prints' : '';
 	fetchScryfallData(document.querySelector("#import-name").value, importCard, unique);
 }
-function saveCard(saveFromFile) {
-	var cardKeys = JSON.parse(localStorage.getItem('cardKeys')) || [];
-	var cardKey, cardToSave;
-	if (saveFromFile) {
-		cardKey = saveFromFile.key;
-	} else {
-		cardKey = getCardName();
-	}
-	if (!saveFromFile) {
-		cardKey = prompt('Enter the name you would like to save your card under:', cardKey);
-		if (!cardKey) {return null;}
-	}
-	cardKey = cardKey.trim();
-	if (cardKeys.includes(cardKey)) {
-		if (!confirm('Would you like to overwrite your card previously saved as "' + cardKey + '"?\n(Clicking "cancel" will affix a version number)')) {
-			var originalCardKey = cardKey;
-			var cardKeyNumber = 1;
-			while (cardKeys.includes(cardKey)) {
-				cardKey = originalCardKey + ' (' + cardKeyNumber + ')';
-				cardKeyNumber ++;
-			}
-		}
-	}
-	if (saveFromFile) {
-		cardToSave = saveFromFile.data;
-	} else {
-		cardToSave = JSON.parse(JSON.stringify(card));
-		cardToSave.frames.forEach(frame => {
-			delete frame.image;
-			frame.masks.forEach(mask => delete mask.image);
-		});
-	}
-	try {
-		localStorage.setItem(cardKey, JSON.stringify(cardToSave));
-		if (!cardKeys.includes(cardKey)) {
-			cardKeys.push(cardKey);
-			cardKeys.sort();
-			localStorage.setItem('cardKeys', JSON.stringify(cardKeys));
-			loadAvailableCards(cardKeys);
-		}
-	} catch (error) {
-		notify('You have exceeded your 5MB of local storage, and your card has failed to save. If you would like to continue saving cards, please download all saved cards, then delete all saved cards to free up space.<br><br>Local storage is most often exceeded by uploading large images directly from your computer. If possible/convenient, using a URL avoids the need to save these large images.<br><br>Apologies for the inconvenience.');
-	}
-}
-async function loadCard(selectedCardKey) {
-	//clear the draggable frames
-	document.querySelector('#frame-list').innerHTML = null;
-	//clear the existing card, then replace it with the new JSON
-	card = {};
-	card = JSON.parse(localStorage.getItem(selectedCardKey));
-	//if the card was loaded properly...
-	if (card) {
-		//load values from card into html inputs
-		document.querySelector('#info-number').value = card.infoNumber;
-		document.querySelector('#info-rarity').value = card.infoRarity;
-		document.querySelector('#info-set').value = card.infoSet;
-		document.querySelector('#info-language').value = card.infoLanguage;
-		document.querySelector('#info-note').value = card.infoNote;
-		document.querySelector('#info-year').value = card.infoYear || date.getFullYear();
-		artistEdited(card.infoArtist);
-		document.querySelector('#text-editor').value = card.text[Object.keys(card.text)[selectedTextIndex]].text;
-		document.querySelector('#text-editor-font-size').value = card.text[Object.keys(card.text)[selectedTextIndex]].fontSize || 0;
-		loadTextOptions(card.text);
-		document.querySelector('#art-x').value = scaleX(card.artX) - scaleWidth(card.marginX);
-		document.querySelector('#art-y').value = scaleY(card.artY) - scaleHeight(card.marginY);
-		document.querySelector('#art-zoom').value = card.artZoom * 100;
-		document.querySelector('#art-rotate').value = card.artRotate || 0;
-		uploadArt(card.artSource);
-		document.querySelector('#setSymbol-x').value = scaleX(card.setSymbolX) - scaleWidth(card.marginX);
-		document.querySelector('#setSymbol-y').value = scaleY(card.setSymbolY) - scaleHeight(card.marginY);
-		document.querySelector('#setSymbol-zoom').value = card.setSymbolZoom * 100;
-		uploadSetSymbol(card.setSymbolSource);
-		document.querySelector('#watermark-x').value = scaleX(card.watermarkX) - scaleWidth(card.marginX);
-		document.querySelector('#watermark-y').value = scaleY(card.watermarkY) - scaleHeight(card.marginY);
-		document.querySelector('#watermark-zoom').value = card.watermarkZoom * 100;
-		// document.querySelector('#watermark-left').value = card.watermarkLeft;
-		// document.querySelector('#watermark-right').value = card.watermarkRight;
-		document.querySelector('#watermark-opacity').value = card.watermarkOpacity * 100;
-		document.getElementById("rounded-corners").checked = !card.noCorners;
-		uploadWatermark(card.watermarkSource);
-		document.querySelector('#serial-number').value = card.serialNumber;
-		document.querySelector('#serial-total').value = card.serialTotal;
-		document.querySelector('#serial-x').value = card.serialX;
-		document.querySelector('#serial-y').value = card.serialY;
-		document.querySelector('#serial-scale').value = card.serialScale;
-		serialInfoEdited();
 
-		card.frames.reverse();
-		await card.frames.forEach(item => addFrame([], item));
-		card.frames.reverse();
-		if (card.onload) {
-			await loadScript(card.onload);
-		}
-		card.manaSymbols.forEach(item => loadScript(item));
-		//canvases
-		var canvasesResized = false;
-		canvasList.forEach(name => {
-			if (window[name + 'Canvas'].width != card.width * (1 + card.marginX) || window[name + 'Canvas'].height != card.height * (1 + card.marginY)) {
-				sizeCanvas(name);
-				canvasesResized = true;
-			}
-		});
-		if (canvasesResized) {
-			drawTextBuffer();
-			drawFrames();
-			bottomInfoEdited();
-			watermarkEdited();
-		}
-	} else {
-		notify(selectedCardKey + ' failed to load.', 5)
-	}
-}
-function deleteCard() {
-	var keyToDelete = document.querySelector('#load-card-options').value;
-	if (keyToDelete) {
-		var cardKeys = JSON.parse(localStorage.getItem('cardKeys'));
-		cardKeys.splice(cardKeys.indexOf(keyToDelete), 1);
-		cardKeys.sort();
-		localStorage.setItem('cardKeys', JSON.stringify(cardKeys));
-		localStorage.removeItem(keyToDelete);
-		loadAvailableCards(cardKeys);
-	}
-}
-function deleteSavedCards() {
-	if (confirm('WARNING:\n\nALL of your saved cards will be deleted! If you would like to save these cards, please make sure you have downloaded them first. There is no way to undo this.\n\n(Press "OK" to delete your cards)')) {
-		var cardKeys = JSON.parse(localStorage.getItem('cardKeys'));
-		cardKeys.forEach(key => localStorage.removeItem(key));
-		localStorage.setItem('cardKeys', JSON.stringify([]));
-		loadAvailableCards([]);
-	}
-}
-async function downloadSavedCards() {
-	var cardKeys = JSON.parse(localStorage.getItem('cardKeys'));
-	if (cardKeys) {
-		var allSavedCards = [];
-		cardKeys.forEach(item => {
-			allSavedCards.push({key:item, data:JSON.parse(localStorage.getItem(item))});
-		});
-		var download = document.createElement('a');
-		download.href = URL.createObjectURL(new Blob([JSON.stringify(allSavedCards)], {type:'text'}));
-		download.download = 'saved-cards.cardconjurer';
-		document.body.appendChild(download);
-		await download.click();
-		download.remove();
-	}
-}
-function uploadSavedCards(event) {
-	var reader = new FileReader();
-	reader.onload = function () {
-		JSON.parse(reader.result).forEach(item => saveCard(item));
-	}
-	reader.readAsText(event.target.files[0]);
-}
 //TUTORIAL TAB
 function loadTutorialVideo() {
 	var video = document.querySelector('.video > iframe');
@@ -5558,5 +5410,4 @@ bindInputs('#show-guidelines', '#show-guidelines-2', true);
 
 // Load / init whatever
 loadScript('/js/frames/groupStandard-3.js');
-loadAvailableCards();
 initDraggableArt();

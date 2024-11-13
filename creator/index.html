@@ -199,6 +199,43 @@
 								<span class='checkmark'></span>
 							</label>
 						</div>
+						<div class='readable-background padding margin-bottom'>
+							<h5 class='padding input-description'>Automatically update frame</h5>
+							<div class='padding input-grid'>
+								<select id="autoFrame" class="input" onchange="setAutoFrame()">
+									<option value="false">Disabled</option>
+									<option value="M15Regular-1">Regular</option>
+									<option value="M15BoxTopper">Extended Art</option>
+									<option value="M15ExtendedArtShort">Extended Art (Shorter Textbox)</option>
+									<option value="UB">Universes Beyond</option>
+									<option value="Etched">Etched</option>
+									<option value="Borderless">Borderless (Alt)</option>
+									<option value="Praetors">Phyrexian</option>
+									<option value="8th">8th Edition</option>
+									<option value="Seventh">Seventh Edition</option>
+		
+									<option disabled>Redone frames</option>
+									<option value="M15RegularNew">Regular (Accurate)</option>
+									<option value="FullArtNew">Full art (Accurate)</option>
+									<option value="UBNew">Universes Beyond (Accurate)</option>
+		
+									<option disabled>Custom frames</option>
+									<option value="Circuit">Circuit</option>
+									<option value="M15Eighth">M15-Eighth</option>
+									<option value="M15EighthUB">M15-Eighth Universes Beyond</option>
+								</select>
+		
+								
+								<!-- <button class='input' onclick='autoFrame("M15");'>M15</button>
+								<button class='input' onclick='autoFrame("UB");'>Universes Beyond</button> -->
+							</div>
+							<div class='padding input-grid'>
+								<label class='checkbox-container input'>Use Nyx frame for all Enchantments (where applicable)
+									<input id='autoframe-always-nyx' type='checkbox' onchange='setAutoframeNyx(this.checked);'>
+									<span class='checkmark'></span>
+								</label>
+							</div>
+						</div>
 					</div>
 					<div id='creator-menu-text' class='hidden'>
 						<div class='readable-background padding margin-bottom'>
@@ -662,7 +699,7 @@
 								<option value="ph">Phyrexian</option>
 							</select>
 						</div>
-						<div class='readable-background margin-bottom padding'>
+						<!-- <div class='readable-background margin-bottom padding'>
 							<h5 class='padding margin-bottom input-description'>Save your current card</h5>
 							<button class='input margin-bottom' onclick='saveCard();'>Save Card</button>
 							<h5 class='padding margin-bottom input-description'>Load a saved card</h5>
@@ -688,6 +725,41 @@
 								<h5 class='margin-top'>Your localstorage runs out of space especially fast when you upload images directly from your computer, because the image itself has to be saved. However, if possible, uploading images via URL will save massive amounts of space, allowing you to save many more cards.</h5>
 								<h5 class='margin-top'>And if you do run out of space, don't worry! You can download all saved cards then delete all saved cards,  freeing up all 5MB of space. And when you'd like to edit the cards you previously downloaded/deleted, you can reupload them via the file upload (under "Upload previously downloaded cards").</h5>
 							</div>
+						</div> -->
+						<div class="readable-background margin-bottom padding">
+							<h5 class="padding margin-bottom input-description">Select Database</h5>
+							<select id="database-select" class="input margin-bottom" onchange="loadAvailableCards(this.value)">
+								<option selected="selected" disabled>None selected</option>
+							</select>
+							<button class="input margin-bottom" onclick="createDatabase()">Create New Database</button>
+							<button class="input margin-bottom" onclick="renameDatabase()">Rename Selected Database</button>
+							<button class="input margin-bottom" onclick="deleteDatabase()">Delete Selected Database</button>
+						</div>
+						
+						<div class="readable-background margin-bottom padding">
+							<h5 class="padding margin-bottom input-description">Save your current card</h5>
+							<button class="input margin-bottom" onclick="saveCard()">Save Card</button>
+							<h5 class="padding margin-bottom input-description">Load a saved card</h5>
+							<select id="load-card-options" class="input margin-bottom" onchange="loadCard(this.value)"></select>
+							<h5 class="padding margin-bottom input-description">Delete selected card</h5>
+							<button class="input" onclick="deleteCard()">Delete Card</button>
+						</div>
+						<!-- <div class='readable-background padding margin-bottom'>
+							<h5 class='padding margin-bottom input-description'>Download all saved cards</h5>
+							<button class='input margin-bottom' onclick='downloadSavedCards();'>Download All</button>
+							<h5 class='padding margin-bottom input-description'>Upload previously downloaded file of saved cards</h5>
+							<input type='file' accept='.cardconjurer,.txt' class='input margin-bottom' oninput='uploadSavedCards(event);'>
+							<h5 class='padding margin-bottom input-description'>Delete ALL saved cards</h5>
+							<button class='input margin-bottom' onclick='deleteSavedCards();'>Delete All</button>
+						</div> -->
+						<div class='readable-background padding'>
+							<h3 class='download padding' onclick='downloadCard();'>Download your card</h3>
+							<h5 onclick='downloadCard(false, true);' id='downloadJpg' href='' target='_blank' class='padding download input-description' style='text-align: left;'>Click here to download as JPEG</h5>
+							<h5 onclick='downloadCard(true);' id='downloadAlt' href='' target='_blank' class='padding download input-description' style='text-align: left;'>Click here for an alternative download</h5>
+							<!-- <label class='checkbox-container input margin-bottom'>800 DPI
+								<input id='high-res' type='checkbox' onchange='toggleHighRes();'>
+								<span class='checkmark'></span>
+							</label> -->
 						</div>
 					</div>
 					<div id='creator-menu-tutorial' class='hidden'>
@@ -705,53 +777,6 @@
 						</div>
 					</div>
 				</div>
-				<div class='readable-background padding margin-bottom'>
-					<h5 class='padding input-description'>Automatically update frame</h5>
-					<div class='padding input-grid'>
-						<select id="autoFrame" class="input" onchange="setAutoFrame()">
-							<option value="false">Disabled</option>
-							<option value="M15Regular-1">Regular</option>
-							<option value="M15BoxTopper">Extended Art</option>
-							<option value="M15ExtendedArtShort">Extended Art (Shorter Textbox)</option>
-							<option value="UB">Universes Beyond</option>
-							<option value="Etched">Etched</option>
-							<option value="Borderless">Borderless (Alt)</option>
-							<option value="Praetors">Phyrexian</option>
-							<option value="8th">8th Edition</option>
-							<option value="Seventh">Seventh Edition</option>
-
-							<option disabled>Redone frames</option>
-							<option value="M15RegularNew">Regular (Accurate)</option>
-							<option value="FullArtNew">Full art (Accurate)</option>
-							<option value="UBNew">Universes Beyond (Accurate)</option>
-
-							<option disabled>Custom frames</option>
-							<option value="Circuit">Circuit</option>
-							<option value="M15Eighth">M15-Eighth</option>
-							<option value="M15EighthUB">M15-Eighth Universes Beyond</option>
-						</select>
-
-						
-						<!-- <button class='input' onclick='autoFrame("M15");'>M15</button>
-						<button class='input' onclick='autoFrame("UB");'>Universes Beyond</button> -->
-					</div>
-					<div class='padding input-grid'>
-						<label class='checkbox-container input'>Use Nyx frame for all Enchantments (where applicable)
-							<input id='autoframe-always-nyx' type='checkbox' onchange='setAutoframeNyx(this.checked);'>
-							<span class='checkmark'></span>
-						</label>
-					</div>
-				</div>
-				<div class='readable-background padding'>
-					<h3 class='download padding' onclick='downloadCard();'>Download your card</h3>
-					<h5 onclick='downloadCard(false, true);' id='downloadJpg' href='' target='_blank' class='padding download input-description' style='text-align: left;'>Click here to download as JPEG</h5>
-					<h5 onclick='downloadCard(true);' id='downloadAlt' href='' target='_blank' class='padding download input-description' style='text-align: left;'>Click here for an alternative download</h5>
-					<!-- <label class='checkbox-container input margin-bottom'>800 DPI
-						<input id='high-res' type='checkbox' onchange='toggleHighRes();'>
-						<span class='checkmark'></span>
-					</label> -->
-				</div>
-
 			</div>
 		</div>
 		<!--
@@ -932,5 +957,6 @@
 
 	</div>
 	<script defer src='/js/creator-23.js'></script>
+	<script defer src='/js/saveload.js'></script>
 	<script defer src='/js/frameSearch.js'></script>
 <!-- END OF CONTENT -->
