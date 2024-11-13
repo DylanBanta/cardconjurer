@@ -6,20 +6,10 @@ if (debugging) {
 	document.querySelectorAll('.debugging').forEach(element => element.classList.remove('hidden'));
 }
 
-//To save the server from being overloaded? Maybe?
-function fixUri(input) {
-	/* --- DISABLED FOR LOCAL VERSION --
-	var prefix = 'https://card-conjurer.storage.googleapis.com';//'https://raw.githubusercontent.com/ImKyle4815/cardconjurer/remake';
-	if (input.includes(prefix) || input.includes('http') || input.includes('data:image') || window.location.href.includes('localhost')) {
-		return input;
-	} else {
-		return prefix + input; //input.replace('/img/frames', prefix + '/img/frames');
-	} */
-	return input;
-}
+
 function setImageUrl(image, source) {
 	image.crossOrigin = 'anonymous';
-	image.src = fixUri(source);
+	image.src = source;
 }
 
 const baseWidth = 1500;
@@ -47,17 +37,17 @@ function getStandardHeight() {
 }
 
 //card object
-var card = {width:getStandardWidth(), height:getStandardHeight(), marginX:0, marginY:0, frames:[], artSource:fixUri('/img/blank.png'), artX:0, artY:0, artZoom:1, artRotate:0, setSymbolSource:fixUri('/img/blank.png'), setSymbolX:0, setSymbolY:0, setSymbolZoom:1, watermarkSource:fixUri('/img/blank.png'), watermarkX:0, watermarkY:0, watermarkZoom:1, watermarkLeft:'none', watermarkRight:'none', watermarkOpacity:0.4, version:'', manaSymbols:[]};
+var card = {width:getStandardWidth(), height:getStandardHeight(), marginX:0, marginY:0, frames:[], artSource:'/img/blank.png', artX:0, artY:0, artZoom:1, artRotate:0, setSymbolSource:'/img/blank.png', setSymbolX:0, setSymbolY:0, setSymbolZoom:1, watermarkSource:'/img/blank.png', watermarkX:0, watermarkY:0, watermarkZoom:1, watermarkLeft:'none', watermarkRight:'none', watermarkOpacity:0.4, version:'', manaSymbols:[]};
 //core images/masks
-const black = new Image(); black.crossOrigin = 'anonymous'; black.src = fixUri('/img/black.png');
-const blank = new Image(); blank.crossOrigin = 'anonymous'; blank.src = fixUri('/img/blank.png');
-const right = new Image(); right.crossOrigin = 'anonymous'; right.src = fixUri('/img/frames/maskRightHalf.png');
-const middle = new Image(); middle.crossOrigin = 'anonymous'; middle.src = fixUri('/img/frames/maskMiddleThird.png');
-const corner = new Image(); corner.crossOrigin = 'anonymous'; corner.src = fixUri('/img/frames/cornerCutout.png');
-const serial = new Image(); serial.crossOrigin = 'anonymous'; serial.src = fixUri('/img/frames/serial.png');
+const black = new Image(); black.crossOrigin = 'anonymous'; black.src = '/img/black.png';
+const blank = new Image(); blank.crossOrigin = 'anonymous'; blank.src = '/img/blank.png';
+const right = new Image(); right.crossOrigin = 'anonymous'; right.src = '/img/frames/maskRightHalf.png';
+const middle = new Image(); middle.crossOrigin = 'anonymous'; middle.src = '/img/frames/maskMiddleThird.png';
+const corner = new Image(); corner.crossOrigin = 'anonymous'; corner.src = '/img/frames/cornerCutout.png';
+const serial = new Image(); serial.crossOrigin = 'anonymous'; serial.src = '/img/frames/serial.png';
 //art
 art = new Image(); art.crossOrigin = 'anonymous'; art.src = blank.src;
-art.onerror = function() {if (!this.src.includes('/img/blank.png')) {this.src = fixUri('/img/blank.png');}}
+art.onerror = function() {if (!this.src.includes('/img/blank.png')) {this.src = '/img/blank.png';}}
 art.onload = artEdited;
 //set symbol
 setSymbol = new Image(); setSymbol.crossOrigin = 'anonymous'; setSymbol.src = blank.src;
@@ -65,12 +55,12 @@ setSymbol.onerror = function() {
 	if (this.src.includes('gatherer.wizards.com')) {
 		notify('<a target="_blank" href="http' + this.src.split('http')[2] + '">Loading the set symbol from Gatherer failed. Please check this link to see if it exists. If it does, it may be necessary to manually download and upload the image.</a>', 5);
 	}
-	if (!this.src.includes('/img/blank.png')) {this.src = fixUri('/img/blank.png');}
+	if (!this.src.includes('/img/blank.png')) {this.src = '/img/blank.png';}
 }
 setSymbol.onload = setSymbolEdited;
 //watermark
 watermark = new Image(); watermark.crossOrigin = 'anonymous'; watermark.src = blank.src;
-watermark.onerror = function() {if (!this.src.includes('/img/blank.png')) {this.src = fixUri('/img/blank.png');}}
+watermark.onerror = function() {if (!this.src.includes('/img/blank.png')) {this.src = '/img/blank.png';}}
 watermark.onload = watermarkEdited;
 //preview canvas
 var previewCanvas = document.querySelector('#previewCanvas');
@@ -371,7 +361,7 @@ function loadManaSymbols(matchColor, manaSymbolPaths, size = [1, 1]) {
 		if (!manaSymbolPath.includes('.png')) {
 			manaSymbolPath += '.svg';
 		}
-		manaSymbol.image.src = fixUri(manaSymbolPath);
+		manaSymbol.image.src = manaSymbolPath;
 		mana.set(manaSymbol.name, manaSymbol);
 		// manaSymbols.push(manaSymbol);
 	});
@@ -480,9 +470,9 @@ function loadFramePack(frameOptions = availableFrames) {
 			this.parentElement.classList.remove('hidden');
 		}
 		if (!item.noThumb && !item.src.includes('/img/black.png')) {
-			frameOptionImage.src = fixUri(item.src.replace('.png', 'Thumb.png').replace('.svg', 'Thumb.png'));
+			frameOptionImage.src = item.src.replace('.png', 'Thumb.png').replace('.svg', 'Thumb.png');
 		} else {
-			frameOptionImage.src = fixUri(item.src);
+			frameOptionImage.src = item.src;
 		}
 		document.querySelector('#frame-picker').appendChild(frameOption);
 
@@ -521,7 +511,7 @@ function frameOptionClicked(event) {
 				maskOptionImage.onload = function() {
 					this.parentElement.classList.remove('hidden');
 				}
-				maskOptionImage.src = fixUri(item.src.replace('.png', 'Thumb.png').replace('.svg', 'Thumb.png'));
+				maskOptionImage.src = item.src.replace('.png', 'Thumb.png').replace('.svg', 'Thumb.png');
 				const maskOptionLabel = document.createElement('p');
 				maskOptionLabel.innerHTML = item.name;
 				maskOption.appendChild(maskOptionLabel);
@@ -3038,7 +3028,7 @@ async function addFrame(additionalMasks = [], loadingFrame = false) {
 		item.image.crossOrigin = 'anonymous';
 		item.image.src = blank.src;
 		item.image.onload = drawFrames;
-		item.image.src = fixUri(item.src);
+		item.image.src = item.src;
 	});
 	frameToAdd.image = new Image();
 	frameToAdd.image.crossOrigin = 'anonymous'
@@ -3047,7 +3037,7 @@ async function addFrame(additionalMasks = [], loadingFrame = false) {
 	if ('stretch' in frameToAdd) {
 		stretchSVG(frameToAdd);
 	} else {
-		frameToAdd.image.src = fixUri(frameToAdd.src);
+		frameToAdd.image.src = frameToAdd.src;
 	}
 	if (!loadingFrame) {
 		card.frames.unshift(frameToAdd);
@@ -3064,14 +3054,14 @@ async function addFrame(additionalMasks = [], loadingFrame = false) {
 	frameElement.onclick = frameElementClicked;
 	var frameElementImage = document.createElement('img');
 	if (frameToAdd.noThumb || frameToAdd.src.includes('/img/black.png')) {
-		frameElementImage.src = fixUri(frameToAdd.src);
+		frameElementImage.src = frameToAdd.src;
 	} else {
-		frameElementImage.src = fixUri(frameToAdd.src.replace('.png', 'Thumb.png'));
+		frameElementImage.src = frameToAdd.src.replace('.png', 'Thumb.png');
 	}
 	frameElement.appendChild(frameElementImage);
 	var frameElementMask = document.createElement('img');
 	if (maskThumbnail) {
-		frameElementMask.src = fixUri(frameToAdd.masks[0].src.replace('.png', 'Thumb.png'));
+		frameElementMask.src = frameToAdd.masks[0].src.replace('.png', 'Thumb.png');
 	} else {
 		frameElementMask.src = black.src;
 	}
@@ -4109,22 +4099,24 @@ function uploadArt(imageSource, otherParams) {
         return;
     }
 
-	console.log('Loading art from source:', imageSource);
+    console.log('Loading art from source:', imageSource);
 
-    // Check if the image source is already a valid file path
-    if (!imageSource.startsWith('data:') && !imageSource.startsWith('http')) {
-        art.src = fixUri(imageSource); // Use the provided file path as is
-        return;
+    // Check if the image source is a local file path
+    if (imageSource.startsWith('/local_art/')) {
+        art.src = imageSource; // Use the local file path directly
+    } else {
+        // Assume it's a Base64 string or a remote URL
+        art.src = imageSource;
     }
 
-    // If it's a Base64 string, process it
-    art.src = imageSource;
-
+    // Handle auto-fit logic if specified
     if (otherParams && otherParams === 'autoFit') {
         art.onload = function () {
             autoFitArt();
-            art.onload = artEdited;
+            art.onload = artEdited; // Reset onload after fitting
         };
+    } else {
+        art.onload = artEdited; // Default behavior for non-autoFit cases
     }
 }
 
@@ -4286,14 +4278,32 @@ function artStopDrag(e) {
 }
 //SET SYMBOL TAB
 function uploadSetSymbol(imageSource, otherParams) {
-	setSymbol.src = imageSource;
-	if (otherParams && otherParams == 'resetSetSymbol') {
-		setSymbol.onload = function() {
-			resetSetSymbol();
-			setSymbol.onload = setSymbolEdited;
-		};
-	}
+    if (!imageSource) {
+        console.error('No set symbol source provided.');
+        return;
+    }
+
+    console.log('Loading set symbol from source:', imageSource);
+
+    // Check if the image source is a local file path
+    if (imageSource.startsWith('/local_art/')) {
+        setSymbol.src = imageSource; // Use the local file path directly
+    } else {
+        // Assume it's a Base64 string or a remote URL
+        setSymbol.src = imageSource;
+    }
+
+    // Handle reset logic if specified
+    if (otherParams && otherParams === 'resetSetSymbol') {
+        setSymbol.onload = function () {
+            resetSetSymbol();
+            setSymbol.onload = setSymbolEdited; // Reset onload after reset
+        };
+    } else {
+        setSymbol.onload = setSymbolEdited; // Default behavior
+    }
 }
+
 function setSymbolEdited() {
 	card.setSymbolSource = setSymbol.src;
 	if (document.querySelector('#lockSetSymbolURL').checked) {
@@ -4337,9 +4347,9 @@ function fetchSetSymbol() {
 	}
 	var setRarity = document.querySelector('#set-symbol-rarity').value.toLowerCase().replace('uncommon', 'u').replace('common', 'c').replace('rare', 'r').replace('mythic', 'm') || 'c';
 	if (['sld', 'a22', 'a23', 'j22'].includes(setCode.toLowerCase())) {
-		uploadSetSymbol(fixUri(`/img/setSymbols/custom/${setCode.toLowerCase()}-${setRarity}.png`), 'resetSetSymbol');
+		uploadSetSymbol(`/img/setSymbols/custom/${setCode.toLowerCase()}-${setRarity}.png`, 'resetSetSymbol');
 	} else if (['cc', 'logan', 'joe'].includes(setCode.toLowerCase())) {
-		uploadSetSymbol(fixUri(`/img/setSymbols/custom/${setCode.toLowerCase()}-${setRarity}.svg`), 'resetSetSymbol');
+		uploadSetSymbol(`/img/setSymbols/custom/${setCode.toLowerCase()}-${setRarity}.svg`, 'resetSetSymbol');
 	} else if (document.querySelector("#set-symbol-source").value == 'gatherer') {
 		if (setSymbolAliases.has(setCode.toLowerCase())) setCode = setSymbolAliases.get(setCode.toLowerCase());
 		uploadSetSymbol('http://gatherer.wizards.com/Handlers/Image.ashx?type=symbol&set=' + setCode + '&size=large&rarity=' + setRarity, 'resetSetSymbol');
@@ -4352,7 +4362,7 @@ function fetchSetSymbol() {
 			extension = 'png';
 		}
 		if (setSymbolAliases.has(setCode.toLowerCase())) setCode = setSymbolAliases.get(setCode.toLowerCase());
-		uploadSetSymbol(fixUri(`/img/setSymbols/official/${setCode.toLowerCase()}-${setRarity}.` + extension), 'resetSetSymbol');
+		uploadSetSymbol(`/img/setSymbols/official/${setCode.toLowerCase()}-${setRarity}.` + extension, 'resetSetSymbol');
 	}
 }
 function lockSetSymbolCode() {
@@ -4371,14 +4381,32 @@ function lockSetSymbolURL() {
 }
 //WATERMARK TAB
 function uploadWatermark(imageSource, otherParams) {
-	watermark.src = imageSource;
-	if (otherParams && otherParams == 'resetWatermark') {
-		watermark.onload = function() {
-			resetWatermark();
-			watermark.onload = watermarkEdited;
-		};
-	}
+    if (!imageSource) {
+        console.error('No watermark source provided.');
+        return;
+    }
+
+    console.log('Loading watermark from source:', imageSource);
+
+    // Check if the image source is a local file path
+    if (imageSource.startsWith('/local_art/')) {
+        watermark.src = imageSource; // Use the local file path directly
+    } else {
+        // Assume it's a Base64 string or a remote URL
+        watermark.src = imageSource;
+    }
+
+    // Handle reset logic if specified
+    if (otherParams && otherParams === 'resetWatermark') {
+        watermark.onload = function () {
+            resetWatermark();
+            watermark.onload = watermarkEdited; // Reset onload after reset
+        };
+    } else {
+        watermark.onload = watermarkEdited; // Default behavior
+    }
 }
+
 function watermarkLeftColor(c) {
 	card.watermarkLeft = c;
 	watermarkEdited();
@@ -5152,7 +5180,7 @@ function loadScript(scriptPath) {
 // Stretchable SVGs
 function stretchSVG(frameObject) {
 	xhr = new XMLHttpRequest();
-	xhr.open('GET', fixUri(frameObject.src), true);
+	xhr.open('GET', frameObject.src, true);
 	xhr.overrideMimeType('image/svg+xml');
 	xhr.onload = function(e) {
 		if (this.readyState == 4 && this.status == 200) {

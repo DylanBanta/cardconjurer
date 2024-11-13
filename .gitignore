@@ -34,5 +34,6 @@ error.log
 fly.toml
 
 /php/db/*
+/php/local_art/*
 
 /.nfs*

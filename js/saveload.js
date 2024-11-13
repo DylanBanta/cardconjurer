@@ -4,20 +4,53 @@ async function saveCard() {
     const cardName = prompt('Enter the name you would like to save your card under:', getCardName());
     if (!cardName) return;
 
+    const saveSymbolAndWatermark = () => {
+        if (setSymbol.src && setSymbol.src.startsWith('data:')) {
+            saveImageToLocalArt(setSymbol.src, (savedSetSymbolPath) => {
+                if (savedSetSymbolPath) {
+                    cardData.setSymbolSource = savedSetSymbolPath;
+                }
+                saveWatermark();
+            });
+        } else {
+            cardData.setSymbolSource = setSymbol.src;
+            saveWatermark();
+        }
+    };
+
+    const saveWatermark = () => {
+        if (watermark.src && watermark.src.startsWith('data:')) {
+            saveImageToLocalArt(watermark.src, (savedWatermarkPath) => {
+                if (savedWatermarkPath) {
+                    cardData.watermarkSource = savedWatermarkPath;
+                }
+                finalizeSave();
+            });
+        } else {
+            cardData.watermarkSource = watermark.src;
+            finalizeSave();
+        }
+    };
+
+    const finalizeSave = () => {
+        proceedToSaveCard(cardName, cardData, selectedDatabase);
+    };
+
     if (art.src && art.src.startsWith('data:')) {
         saveImageToLocalArt(art.src, (savedImagePath) => {
             if (savedImagePath) {
                 cardData.artSource = savedImagePath;
-                proceedToSaveCard(cardName, cardData, selectedDatabase);
+                saveSymbolAndWatermark();
             } else {
-                alert('Failed to save the image. Card not saved.');
+                alert('Failed to save the card art image. Card not saved.');
             }
         });
     } else {
         cardData.artSource = art.src;
-        proceedToSaveCard(cardName, cardData, selectedDatabase);
+        saveSymbolAndWatermark();
     }
 }
+
 
 function proceedToSaveCard(cardName, cardData, selectedDatabase) {
     fetchFromAPI('/php/database.php', {
@@ -102,93 +135,26 @@ async function loadCard(cardId) {
     if (result.success) {
         const cardData = result.data;
 
-        // Clear existing frames
-        document.querySelector('#frame-list').innerHTML = '';
-
-        // Reset card object
-        card = cardData;
-
-        // Populate fields from card data
-        document.querySelector('#info-number').value = card.infoNumber || '';
-        document.querySelector('#info-rarity').value = card.infoRarity || '';
-        document.querySelector('#info-set').value = card.infoSet || '';
-        document.querySelector('#info-language').value = card.infoLanguage || '';
-        document.querySelector('#info-note').value = card.infoNote || '';
-        document.querySelector('#info-year').value = card.infoYear || new Date().getFullYear();
-        artistEdited(card.infoArtist || '');
-
-        document.querySelector('#text-editor').value = card.text[Object.keys(card.text)[selectedTextIndex]]?.text || '';
-        document.querySelector('#text-editor-font-size').value = card.text[Object.keys(card.text)[selectedTextIndex]]?.fontSize || 0;
-
-        loadTextOptions(card.text);
-
-        document.querySelector('#art-x').value = scaleX(card.artX) - scaleWidth(card.marginX);
-        document.querySelector('#art-y').value = scaleY(card.artY) - scaleHeight(card.marginY);
-        document.querySelector('#art-zoom').value = (card.artZoom || 1) * 100;
-        document.querySelector('#art-rotate').value = card.artRotate || 0;
-
-        uploadArt(card.artSource);
-        console.log('Card art source:', card.artSource);
-
-        document.querySelector('#setSymbol-x').value = scaleX(card.setSymbolX) - scaleWidth(card.marginX);
-        document.querySelector('#setSymbol-y').value = scaleY(card.setSymbolY) - scaleHeight(card.marginY);
-        document.querySelector('#setSymbol-zoom').value = (card.setSymbolZoom || 1) * 100;
-
-        uploadSetSymbol(card.setSymbolSource);
-
-        document.querySelector('#watermark-x').value = scaleX(card.watermarkX) - scaleWidth(card.marginX);
-        document.querySelector('#watermark-y').value = scaleY(card.watermarkY) - scaleHeight(card.marginY);
-        document.querySelector('#watermark-zoom').value = (card.watermarkZoom || 1) * 100;
-        document.querySelector('#watermark-opacity').value = (card.watermarkOpacity || 1) * 100;
-
-        document.getElementById('rounded-corners').checked = !card.noCorners;
-
-        uploadWatermark(card.watermarkSource);
-
-        document.querySelector('#serial-number').value = card.serialNumber || '';
-        document.querySelector('#serial-total').value = card.serialTotal || '';
-        document.querySelector('#serial-x').value = card.serialX || 0;
-        document.querySelector('#serial-y').value = card.serialY || 0;
-        document.querySelector('#serial-scale').value = card.serialScale || 1;
-
-        serialInfoEdited();
-
-        // Add frames back to the editor
-        card.frames.reverse();
-        for (const frame of card.frames) {
-            await addFrame([], frame);
+        // Append website URL to local image paths
+        const baseUrl = window.location.origin + '/php';
+        if (cardData.artSource && cardData.artSource.startsWith('/local_art/')) {
+            cardData.artSource = baseUrl + cardData.artSource;
         }
-        card.frames.reverse();
-
-        // Reload any scripts required for the card
-        if (card.onload) {
-            await loadScript(card.onload);
+        if (cardData.setSymbolSource && cardData.setSymbolSource.startsWith('/local_art/')) {
+            cardData.setSymbolSource = baseUrl + cardData.setSymbolSource;
         }
-        if (card.manaSymbols) {
-            for (const manaSymbol of card.manaSymbols) {
-                await loadScript(manaSymbol);
-            }
+        if (cardData.watermarkSource && cardData.watermarkSource.startsWith('/local_art/')) {
+            cardData.watermarkSource = baseUrl + cardData.watermarkSource;
         }
 
-        // Resize canvases and redraw everything
-        let canvasesResized = false;
-        canvasList.forEach((name) => {
-            const canvas = window[name + 'Canvas'];
-            if (canvas.width !== card.width * (1 + card.marginX) || canvas.height !== card.height * (1 + card.marginY)) {
-                sizeCanvas(name);
-                canvasesResized = true;
-            }
-        });
-        if (canvasesResized) {
-            drawTextBuffer();
-            drawFrames();
-            bottomInfoEdited();
-            watermarkEdited();
-        }
+        loadCardDataToCanvas(cardData);
     } else {
         alert('Failed to load card: ' + result.message);
     }
 }
+
+
+
 
 
 async function deleteCard() {
@@ -271,6 +237,18 @@ async function uploadDb(files) {
 }
 
 async function loadCardDataToCanvas(cardData) {
+    // Append website URL to local image paths
+    const baseUrl = window.location.origin + '/php';
+    if (cardData.artSource && cardData.artSource.startsWith('/local_art/')) {
+        cardData.artSource = baseUrl + cardData.artSource;
+    }
+    if (cardData.setSymbolSource && cardData.setSymbolSource.startsWith('/local_art/')) {
+        cardData.setSymbolSource = baseUrl + cardData.setSymbolSource;
+    }
+    if (cardData.watermarkSource && cardData.watermarkSource.startsWith('/local_art/')) {
+        cardData.watermarkSource = baseUrl + cardData.watermarkSource;
+    }
+
     // Reset editor to a clean state
     document.querySelector('#frame-list').innerHTML = '';
     card = cardData;
@@ -318,6 +296,7 @@ async function loadCardDataToCanvas(cardData) {
     // Trigger a redraw on the canvas
     drawCard();
 }
+
 
 async function createDatabase() {
     const dbName = prompt('Enter the new database name:');
