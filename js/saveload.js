@@ -20,7 +20,7 @@ async function saveCard() {
 }
 
 function proceedToSaveCard(cardName, cardData, selectedDatabase) {
-    fetchFromAPI('database.php', {
+    fetchFromAPI('/php/database.php', {
         action: 'saveCard',
         database: selectedDatabase,
         name: cardName.trim(),
@@ -53,7 +53,7 @@ function saveImageToLocalArt(imageSource, callback) {
         formData.append('image', imageSource);
     }
 
-    fetch('/saveArt.php', {
+    fetch('/php/saveArt.php', {
         method: 'POST',
         body: formData,
     })
@@ -72,7 +72,7 @@ function saveImageToLocalArt(imageSource, callback) {
 }
 
 async function loadAvailableCards(selectedDatabase) {
-    const result = await fetchFromAPI('database.php', {
+    const result = await fetchFromAPI('/php/database.php', {
         action: 'listCards',
         database: selectedDatabase,
     });
@@ -93,7 +93,7 @@ async function loadAvailableCards(selectedDatabase) {
 async function loadCard(cardId) {
     const selectedDatabase = document.querySelector('#database-select').value;
 
-    const result = await fetchFromAPI('database.php', {
+    const result = await fetchFromAPI('/php/database.php', {
         action: 'loadCard',
         id: cardId,
         database: selectedDatabase,
@@ -197,7 +197,7 @@ async function deleteCard() {
 
     if (!cardId) return;
 
-    const result = await fetchFromAPI('database.php', {
+    const result = await fetchFromAPI('/php/database.php', {
         action: 'deleteCard',
         id: cardId,
         database: selectedDatabase,
@@ -223,7 +223,7 @@ async function fetchFromAPI(endpoint, data = {}) {
 
 async function deleteSavedCards() {
     if (confirm('Are you sure you want to delete all saved cards?')) {
-        const result = await fetchFromAPI('database.php', { action: 'deleteAllCards' });
+        const result = await fetchFromAPI('/php/database.php', { action: 'deleteAllCards' });
         if (result.success) {
             alert('All cards deleted successfully.');
             loadAvailableCards(); // Refresh the list of saved cards
@@ -235,7 +235,7 @@ async function deleteSavedCards() {
 
 function downloadSavedCards() {
     const link = document.createElement('a');
-    link.href = 'database.php?action=downloadSavedCards';
+    link.href = '/php/database.php?action=downloadSavedCards';
     link.download = 'cards.db';
     document.body.appendChild(link);
     link.click();
@@ -252,7 +252,7 @@ async function uploadDb(files) {
     formData.append('dbFile', files[0]);
 
     try {
-        const response = await fetch('database.php?action=uploadDb', {
+        const response = await fetch('/php/database.php?action=uploadDb', {
             method: 'POST',
             body: formData,
         });
@@ -323,7 +323,7 @@ async function createDatabase() {
     const dbName = prompt('Enter the new database name:');
     if (!dbName) return;
 
-    const result = await fetchFromAPI('database.php', {
+    const result = await fetchFromAPI('/php/database.php', {
         action: 'createDatabase',
         name: dbName,
     });
@@ -345,7 +345,7 @@ async function createDatabase() {
 
 
 async function updateDatabaseDropdown() {
-    const result = await fetchFromAPI('database.php', { action: 'listDatabases' });
+    const result = await fetchFromAPI('/php/database.php', { action: 'listDatabases' });
     const databaseSelect = document.querySelector('#database-select');
     databaseSelect.innerHTML = ''; // Clear existing options
     if (result.success) {
@@ -386,7 +386,7 @@ async function renameDatabase() {
     const newDatabaseName = prompt('Enter the new name for the database:', currentDatabase.replace('.db', ''));
     if (!newDatabaseName) return;
 
-    const result = await fetchFromAPI('database.php', {
+    const result = await fetchFromAPI('/php/database.php', {
         action: 'renameDatabase',
         currentName: currentDatabase,
         newName: newDatabaseName,
@@ -413,7 +413,7 @@ async function deleteDatabase() {
         return;
     }
 
-    const result = await fetchFromAPI('database.php', {
+    const result = await fetchFromAPI('/php/database.php', {
         action: 'deleteDatabase',
         name: currentDatabase,
     });

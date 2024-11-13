@@ -33,4 +33,6 @@ error.log
 
 fly.toml
 
-/db/*
+/php/db/*
+
+/.nfs*
